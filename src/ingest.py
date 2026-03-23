@@ -52,20 +52,22 @@ def fetch_json(url, label=""):
 
 def fetch_fdic_branches():
     """
-    Fetch FDIC bank branch data by county.
+    Fetch FDIC bank branch data from the Summary of Deposits (SOD) endpoint.
+    Uses /api/sod with YEAR filter for current data.
     Returns dict: {county_fips: [list of branch records]}
-    Each record has STCNTYBR, DEPSUM, NAMEFULL, CITYBR, STALPBR, ZIPBR,
-    ADDRESBR, LATITUDE, LONGITUDE.
+    Each record has STCNTYBR (county FIPS), DEPSUM (deposits), and branch info.
     """
-    print("Fetching FDIC bank branch data...")
+    print("Fetching FDIC bank branch data (SOD 2024)...")
     branches_by_county = {}
     total_branches = 0
 
     for state in STATES:
+        # Use SOD endpoint which has STCNTYBR and DEPSUM fields
+        # Filter to 2024 (most recent SOD year)
         url = (
-            f"https://banks.data.fdic.gov/api/locations"
-            f"?filters=STALP:{state}"
-            f"&fields=STCNTYBR,DEPSUM,NAMEFULL,CITYBR,STALPBR,ZIPBR,ADDRESBR,LATITUDE,LONGITUDE"
+            f"https://banks.data.fdic.gov/api/sod"
+            f"?filters=STALP:{state}%20AND%20YEAR:2024"
+            f"&fields=STCNTYBR,DEPSUM,NAMEFULL,CITYBR,STALPBR,ZIPBR,ADDRESBR"
             f"&limit=10000&fmt=json"
         )
         data = fetch_json(url, f"FDIC {state}")
@@ -90,8 +92,6 @@ def fetch_fdic_branches():
                     "state": rec.get("STALPBR", ""),
                     "zip": rec.get("ZIPBR", ""),
                     "address": rec.get("ADDRESBR", ""),
-                    "latitude": rec.get("LATITUDE"),
-                    "longitude": rec.get("LONGITUDE"),
                 })
 
         process_items(data["data"])

@@ -233,9 +233,6 @@ def load_raw_fdic():
     county_fdic = {}
     for fips, branches in branches_by_county.items():
         total_deposits = 0
-        lat_sum = 0
-        lon_sum = 0
-        coord_count = 0
 
         for b in branches:
             dep = b.get("deposits")
@@ -244,21 +241,10 @@ def load_raw_fdic():
                     total_deposits += float(dep)
                 except (ValueError, TypeError):
                     pass
-            blat = b.get("latitude")
-            blon = b.get("longitude")
-            if blat is not None and blon is not None:
-                try:
-                    lat_sum += float(blat)
-                    lon_sum += float(blon)
-                    coord_count += 1
-                except (ValueError, TypeError):
-                    pass
 
         county_fdic[fips] = {
             "branch_count": len(branches),
             "total_deposits": total_deposits,
-            "latitude": round(lat_sum / coord_count, 6) if coord_count > 0 else None,
-            "longitude": round(lon_sum / coord_count, 6) if coord_count > 0 else None,
         }
 
     print(f"  FDIC: {len(county_fdic)} counties loaded")
@@ -357,9 +343,10 @@ def merge_all():
         is_banking_desert = branch_count == 0
         is_at_risk_desert = branch_count <= 2 and not is_banking_desert
 
-        # Coordinates from FDIC branch averages (good proxy for county center)
-        latitude = fdic_data.get("latitude")
-        longitude = fdic_data.get("longitude")
+        # No coordinates from SOD data (deposits only, no lat/lon)
+        # Choropleth maps use FIPS codes directly, no coordinates needed
+        latitude = None
+        longitude = None
 
         # CFPB state-level data
         cfpb_state = cfpb.get(state_abbr, {})
