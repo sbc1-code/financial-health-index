@@ -1,0 +1,6 @@
+data/raw/
+data/financial.duckdb
+__pycache__/
+*.pyc
+.venv/
+.env
