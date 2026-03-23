@@ -244,10 +244,6 @@ def fetch_census_acs(api_key=None):
     Fetch Census ACS 5-year data: population, income, poverty, race by county.
     Tables: B01003 (pop), B19013 (income), B17001 (poverty), B02001 (race).
     """
-    if not api_key:
-        print("Skipping Census ACS (no API key). Set CENSUS_API_KEY env var.")
-        return {}
-
     print("Fetching Census ACS data...")
     variables = (
         "NAME,"
@@ -260,11 +256,12 @@ def fetch_census_acs(api_key=None):
         "B02001_003E,"     # black alone
         "B03003_003E"      # hispanic/latino
     )
-    url = (
+    base_url = (
         f"https://api.census.gov/data/2023/acs/acs5"
         f"?get={variables}"
-        f"&for=county:*&key={api_key}"
+        f"&for=county:*"
     )
+    url = f"{base_url}&key={api_key}" if api_key else base_url
 
     try:
         req = Request(url, headers={"User-Agent": "FinHealthIndex/1.0"})
