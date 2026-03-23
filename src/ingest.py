@@ -64,9 +64,10 @@ def fetch_fdic_branches():
     for state in STATES:
         # Use SOD endpoint which has STCNTYBR and DEPSUM fields
         # Filter to 2024 (most recent SOD year)
+        # Quote state abbreviation to prevent "OR" being parsed as logical operator
         url = (
             f"https://banks.data.fdic.gov/api/sod"
-            f"?filters=STALP:{state}%20AND%20YEAR:2024"
+            f'?filters=STALP:"{state}"%20AND%20YEAR:2024'
             f"&fields=STCNTYBR,DEPSUM,NAMEFULL,CITYBR,STALPBR,ZIPBR,ADDRESBR"
             f"&limit=10000&fmt=json"
         )
