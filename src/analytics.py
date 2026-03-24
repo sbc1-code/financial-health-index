@@ -28,29 +28,32 @@ BORDER_FIPS = [
 
 
 def _ensure_db():
-    """Check DB exists. Auto-seed if processed data available."""
-    if DB_PATH.exists():
-        try:
-            con = duckdb.connect(str(DB_PATH), read_only=True)
-            count = con.execute("SELECT COUNT(*) FROM counties").fetchone()[0]
-            con.close()
-            if count > 0:
-                return True
-        except Exception:
-            pass
+    """Check DB exists and is current. Re-seed if JSON is newer than DB."""
+    import os
+    if DB_PATH.exists() and PROCESSED_PATH.exists():
+        db_mtime = os.path.getmtime(DB_PATH)
+        json_mtime = os.path.getmtime(PROCESSED_PATH)
+        if json_mtime > db_mtime:
+            print("Processed data is newer than database. Re-seeding...")
+            DB_PATH.unlink()
+        else:
+            try:
+                con = duckdb.connect(str(DB_PATH), read_only=True)
+                count = con.execute("SELECT COUNT(*) FROM counties").fetchone()[0]
+                con.close()
+                if count > 0:
+                    return True
+            except Exception:
+                pass
 
-    # Try auto-seed
     if PROCESSED_PATH.exists():
-        print("Database not found. Auto-seeding from processed data...")
+        print("Auto-seeding from processed data...")
         from src.seed import seed
         seed()
         return DB_PATH.exists()
 
     print("No database or processed data found.")
-    print("Run the full pipeline:")
-    print("  python -m src.ingest")
-    print("  python -m src.clean")
-    print("  python -m src.seed")
+    print("Run: python -m src.ingest && python -m src.clean && python -m src.seed")
     return False
 
 
