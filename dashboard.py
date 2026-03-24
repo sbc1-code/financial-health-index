@@ -133,16 +133,6 @@ st.markdown("""
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
-    .kpi-severity {
-        font-size: 0.8rem;
-        font-weight: 600;
-        margin-top: 2px;
-    }
-    .kpi-context {
-        font-size: 0.72rem;
-        color: #6B6B6B;
-        margin-top: 4px;
-    }
     .quadrant-card {
         background: #FFFFFF;
         border: 1px solid #E0DDD8;
@@ -396,7 +386,7 @@ with tab1:
                 f'<div class="kpi-card">'
                 f'<div class="kpi-value">{total:,}</div>'
                 f'<div class="kpi-label">Counties Analyzed</div>'
-                f'<div class="kpi-context">Every US county with available data</div>'
+                f'<div style="font-size:0.72rem;color:#6B6B6B;margin-top:4px;">Every US county with available data</div>'
                 f'</div>',
                 unsafe_allow_html=True,
             )
@@ -405,7 +395,7 @@ with tab1:
                 f'<div class="kpi-card">'
                 f'<div class="kpi-value" style="color: {TERRACOTTA};">{deserts:,}</div>'
                 f'<div class="kpi-label">Banking Deserts</div>'
-                f'<div class="kpi-context">Counties with zero bank branches</div>'
+                f'<div style="font-size:0.72rem;color:#6B6B6B;margin-top:4px;">Counties with zero bank branches</div>'
                 f'</div>',
                 unsafe_allow_html=True,
             )
@@ -414,8 +404,8 @@ with tab1:
                 f'<div class="kpi-card">'
                 f'<div class="kpi-value" style="color: {exc_col};">{exc:+.1f}</div>'
                 f'<div class="kpi-label">Avg Exclusion Score</div>'
-                f'<div class="kpi-severity" style="color: {exc_col};">{exc_sev}</div>'
-                f'<div class="kpi-context">Positive = distress exceeds access</div>'
+                f'<div style="font-size:0.8rem;font-weight:600;margin-top:2px;" style="color: {exc_col};">{exc_sev}</div>'
+                f'<div style="font-size:0.72rem;color:#6B6B6B;margin-top:4px;">Positive = distress exceeds access</div>'
                 f'</div>',
                 unsafe_allow_html=True,
             )
@@ -424,7 +414,7 @@ with tab1:
                 f'<div class="kpi-card">'
                 f'<div class="kpi-value" style="color: {TERRACOTTA};">{most_excl}</div>'
                 f'<div class="kpi-label">Most Excluded State</div>'
-                f'<div class="kpi-context">Highest avg exclusion score</div>'
+                f'<div style="font-size:0.72rem;color:#6B6B6B;margin-top:4px;">Highest avg exclusion score</div>'
                 f'</div>',
                 unsafe_allow_html=True,
             )
@@ -710,8 +700,8 @@ with tab3:
                         f'<div class="score-card">'
                         f'<div class="score-label">How much banking exists?</div>'
                         f'<div class="score-value" style="color: {a_col};">{acc:.0f} / 100</div>'
-                        f'<div class="kpi-severity" style="color: {a_col};">{a_sev}</div>'
-                        f'<div class="kpi-context">Based on branches per capita, deposits, unbanked rate</div>'
+                        f'<div style="font-size:0.8rem;font-weight:600;margin-top:2px;" style="color: {a_col};">{a_sev}</div>'
+                        f'<div style="font-size:0.72rem;color:#6B6B6B;margin-top:4px;">Based on branches per capita, deposits, unbanked rate</div>'
                         f'</div>',
                         unsafe_allow_html=True,
                     )
@@ -722,8 +712,8 @@ with tab3:
                         f'<div class="score-card">'
                         f'<div class="score-label">How much financial pain?</div>'
                         f'<div class="score-value" style="color: {d_col};">{dist:.0f} / 100</div>'
-                        f'<div class="kpi-severity" style="color: {d_col};">{d_sev}</div>'
-                        f'<div class="kpi-context">Based on poverty, complaints, unbanked, income</div>'
+                        f'<div style="font-size:0.8rem;font-weight:600;margin-top:2px;" style="color: {d_col};">{d_sev}</div>'
+                        f'<div style="font-size:0.72rem;color:#6B6B6B;margin-top:4px;">Based on poverty, complaints, unbanked, income</div>'
                         f'</div>',
                         unsafe_allow_html=True,
                     )
@@ -734,8 +724,8 @@ with tab3:
                         f'<div class="score-card">'
                         f'<div class="score-label">The gap</div>'
                         f'<div class="score-value" style="color: {e_col};">{exclusion:+.0f}</div>'
-                        f'<div class="kpi-severity" style="color: {e_col};">{e_sev}</div>'
-                        f'<div class="kpi-context">Positive = pain exceeds access. Negative = well served.</div>'
+                        f'<div style="font-size:0.8rem;font-weight:600;margin-top:2px;" style="color: {e_col};">{e_sev}</div>'
+                        f'<div style="font-size:0.72rem;color:#6B6B6B;margin-top:4px;">Positive = pain exceeds access. Negative = well served.</div>'
                         f'</div>',
                         unsafe_allow_html=True,
                     )
