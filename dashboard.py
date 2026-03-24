@@ -56,6 +56,55 @@ QUADRANT_DESCRIPTIONS = {
 
 PLOTLY_CONFIG = {"displayModeBar": False}
 
+
+# ---------------------------------------------------------------------------
+# Score interpretation helpers
+# ---------------------------------------------------------------------------
+
+def access_label(score):
+    """Translate Access Score to plain language."""
+    if score is None:
+        return "N/A", MUTED
+    if score >= 75:
+        return "Strong access", GREEN
+    elif score >= 50:
+        return "Adequate access", OLIVE
+    elif score >= 25:
+        return "Below average", ORANGE
+    else:
+        return "Very limited", TERRACOTTA
+
+
+def distress_label(score):
+    """Translate Distress Score to plain language."""
+    if score is None:
+        return "N/A", MUTED
+    if score >= 75:
+        return "Severe distress", TERRACOTTA
+    elif score >= 50:
+        return "High distress", ORANGE
+    elif score >= 25:
+        return "Moderate distress", GOLD
+    else:
+        return "Low distress", GREEN
+
+
+def exclusion_label(score):
+    """Translate Exclusion Score to plain language."""
+    if score is None:
+        return "N/A", MUTED
+    if score > 40:
+        return "Severely underserved", TERRACOTTA
+    elif score > 20:
+        return "Significantly underserved", ORANGE
+    elif score > 0:
+        return "Moderately underserved", GOLD
+    elif score > -20:
+        return "Roughly balanced", OLIVE
+    else:
+        return "Well served", GREEN
+
+
 # ---------------------------------------------------------------------------
 # CSS
 # ---------------------------------------------------------------------------
@@ -83,6 +132,16 @@ st.markdown("""
         margin-top: 4px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+    }
+    .kpi-severity {
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-top: 2px;
+    }
+    .kpi-context {
+        font-size: 0.72rem;
+        color: #6B6B6B;
+        margin-top: 4px;
     }
     .quadrant-card {
         background: #FFFFFF;
@@ -316,48 +375,56 @@ tab1, tab2, tab3, tab4 = st.tabs(["Overview", "Explore", "Your County", "Under t
 with tab1:
     st.markdown("# Community Financial Health Index")
     st.markdown(
-        '<p style="color: #6B6B6B; font-size: 1.05rem; margin-top: -8px;">'
-        "Where are Americans financially underserved?"
-        "</p>",
-        unsafe_allow_html=True,
+        "Every US county scored on two questions: **How much economic pain exists?** (Distress) "
+        "and **How much banking infrastructure is available?** (Access). "
+        "The gap between them shows where people are financially underserved."
     )
 
     overview = load_overview()
     if len(overview) > 0:
         row = overview.iloc[0]
+        total = int(row["total_counties"])
+        deserts = int(row["banking_desert_count"])
+        exc = row["avg_exclusion_score"]
+        exc_sev, exc_col = exclusion_label(exc)
+        most_excl = row["most_excluded_state"]
 
-        # KPI cards
+        # KPI cards with plain-language context
         k1, k2, k3, k4 = st.columns(4)
         with k1:
             st.markdown(
                 f'<div class="kpi-card">'
-                f'<div class="kpi-value">{int(row["total_counties"]):,}</div>'
+                f'<div class="kpi-value">{total:,}</div>'
                 f'<div class="kpi-label">Counties Analyzed</div>'
+                f'<div class="kpi-context">Every US county with available data</div>'
                 f'</div>',
                 unsafe_allow_html=True,
             )
         with k2:
             st.markdown(
                 f'<div class="kpi-card">'
-                f'<div class="kpi-value">{int(row["banking_desert_count"]):,}</div>'
+                f'<div class="kpi-value" style="color: {TERRACOTTA};">{deserts:,}</div>'
                 f'<div class="kpi-label">Banking Deserts</div>'
+                f'<div class="kpi-context">Counties with zero bank branches</div>'
                 f'</div>',
                 unsafe_allow_html=True,
             )
         with k3:
-            exc = row["avg_exclusion_score"]
             st.markdown(
                 f'<div class="kpi-card">'
-                f'<div class="kpi-value">{exc:.1f}</div>'
+                f'<div class="kpi-value" style="color: {exc_col};">{exc:+.1f}</div>'
                 f'<div class="kpi-label">Avg Exclusion Score</div>'
+                f'<div class="kpi-severity" style="color: {exc_col};">{exc_sev}</div>'
+                f'<div class="kpi-context">Positive = distress exceeds access</div>'
                 f'</div>',
                 unsafe_allow_html=True,
             )
         with k4:
             st.markdown(
                 f'<div class="kpi-card">'
-                f'<div class="kpi-value">{row["most_excluded_state"]}</div>'
+                f'<div class="kpi-value" style="color: {TERRACOTTA};">{most_excl}</div>'
                 f'<div class="kpi-label">Most Excluded State</div>'
+                f'<div class="kpi-context">Highest avg exclusion score</div>'
                 f'</div>',
                 unsafe_allow_html=True,
             )
@@ -477,6 +544,10 @@ with tab1:
 # ===== TAB 2: EXPLORE =====
 with tab2:
     st.markdown("## Explore Counties")
+    st.markdown(
+        "Each dot is a county. **Right side** = more economic pain. **Bottom** = fewer banks. "
+        "Counties in the **bottom-right** are the most underserved."
+    )
 
     scatter_df = load_scatter()
     if len(scatter_df) == 0:
@@ -630,35 +701,41 @@ with tab3:
 
                 st.markdown("")
 
-                # Score cards
+                # Score cards with plain-language labels
                 s1, s2, s3 = st.columns(3)
                 with s1:
-                    access = c.get("access_score", 0) or 0
-                    access_color = GREEN if access >= 50 else TERRACOTTA
+                    acc = c.get("access_score", 0) or 0
+                    a_sev, a_col = access_label(acc)
                     st.markdown(
                         f'<div class="score-card">'
-                        f'<div class="score-value" style="color: {access_color};">{access:.1f}</div>'
-                        f'<div class="score-label">Access Score</div>'
+                        f'<div class="score-label">How much banking exists?</div>'
+                        f'<div class="score-value" style="color: {a_col};">{acc:.0f} / 100</div>'
+                        f'<div class="kpi-severity" style="color: {a_col};">{a_sev}</div>'
+                        f'<div class="kpi-context">Based on branches per capita, deposits, unbanked rate</div>'
                         f'</div>',
                         unsafe_allow_html=True,
                     )
                 with s2:
-                    distress = c.get("distress_score", 0) or 0
-                    distress_color = TERRACOTTA if distress > 50 else GREEN
+                    dist = c.get("distress_score", 0) or 0
+                    d_sev, d_col = distress_label(dist)
                     st.markdown(
                         f'<div class="score-card">'
-                        f'<div class="score-value" style="color: {distress_color};">{distress:.1f}</div>'
-                        f'<div class="score-label">Distress Score</div>'
+                        f'<div class="score-label">How much financial pain?</div>'
+                        f'<div class="score-value" style="color: {d_col};">{dist:.0f} / 100</div>'
+                        f'<div class="kpi-severity" style="color: {d_col};">{d_sev}</div>'
+                        f'<div class="kpi-context">Based on poverty, complaints, unbanked, income</div>'
                         f'</div>',
                         unsafe_allow_html=True,
                     )
                 with s3:
                     exclusion = c.get("exclusion_score", 0) or 0
-                    exc_color = TERRACOTTA if exclusion > 0 else GREEN
+                    e_sev, e_col = exclusion_label(exclusion)
                     st.markdown(
                         f'<div class="score-card">'
-                        f'<div class="score-value" style="color: {exc_color};">{exclusion:.1f}</div>'
-                        f'<div class="score-label">Exclusion Score</div>'
+                        f'<div class="score-label">The gap</div>'
+                        f'<div class="score-value" style="color: {e_col};">{exclusion:+.0f}</div>'
+                        f'<div class="kpi-severity" style="color: {e_col};">{e_sev}</div>'
+                        f'<div class="kpi-context">Positive = pain exceeds access. Negative = well served.</div>'
                         f'</div>',
                         unsafe_allow_html=True,
                     )
